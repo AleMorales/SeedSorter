@@ -256,7 +256,7 @@ compareAlgorithmsAcrossFiles = function(learners, tasks, control) {
     future::plan(future::sequential)
   }
   # Create the BenchmarkResult object
-  results = furrr::future_map(learners, function(x) outermap(x, tasks))
+  results = purrr::map(learners, function(x) outermap(x, tasks))
   names(results) = purrr::map(learners, ~.x$id)
   result = structure(list(results = list(task = results), measures = list(mlr::ber),
                           learners = learners),
