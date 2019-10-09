@@ -181,7 +181,8 @@ cleanSample = function(data, guess = 200) {
 #' @export
 createTask = function(data, id = "cleanseeds") {
   task = mlr::makeClassifTask(id = id, data = data, target = "Class", positive = "S")
-  ratio = dplyr::group_by(data, Class) %>% summarise(n = n()) %>% (function(x) max(x$n)/min(x$n))
+  ratio = dplyr::group_by(data, Class) %>%
+           dplyr::summarise(n = n()) %>% (function(x) max(x$n)/min(x$n))
   task = mlr::smote(task, rate = ratio)
   return(task)
 }
