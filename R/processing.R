@@ -104,7 +104,7 @@ readData = function(mainfile, profile) {
                     tibble::as_tibble(.) %>%
                     dplyr::filter(!is.na(Id), !is.na(Time)) %>%
                     dplyr::select(-X27)
-  all_data = dplyr::bind_cols(main_data, profile_data)
+  all_data = dplyr::bind_cols(main_data[1:nrow(profile_data),], profile_data)
   dplyr::select(all_data, TOF, Extinction, Green, Yellow, Red, P, Px, C)
 }
 
@@ -127,7 +127,8 @@ getData = function(main_file, profile_file, datadir = "",
 
   # Retrieve data from the main_file and profile_file
   data = readData(file.path(datadir, main_file),
-                  file.path(datadir, profile_file)) %>% mutate(Class = "S")
+                  file.path(datadir, profile_file)) %>%
+          dplyr::mutate(Class = "S")
 
   # If a waste file is added, append it to the data
   if(!is.null(main_waste_file)) {
