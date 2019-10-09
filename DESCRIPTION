@@ -15,3 +15,4 @@ Imports: dplyr, tibble, forcats, ggplot2, parallelMap, xgboost,
          randomForestSRC, kernlab, glmnet, FNN, MASS, future, purrr, furrr, fst,
          readr, magrittr, ParamHelpers
 Depends: mlr
+Roxygen: list(markdown = TRUE)

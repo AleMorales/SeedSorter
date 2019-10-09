@@ -1,4 +1,5 @@
-
+# Add a classifier to mlr that will find an optimum threshold for the Extinction feature to separate
+# seeds from non-seeds
 
 #' @export
 makeRLearner.classif.extinction = function() {

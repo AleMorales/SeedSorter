@@ -1,6 +1,4 @@
-# Retrieve a learner with all the pre-procesing steps added to them
-# The list of algorithms allowed are: xgboost, knn, lda, qda, naiveBayes, logistic, svm and randomforest
-# Random forests is actually implemented using xgboost (with only one round of boosting)
+# Retrieve a learning algorithm
 getLearner = function(algorithm = "xgboost") {
 
   # Depending on the type of algorithm, add different pre-processing steps
@@ -43,8 +41,8 @@ getLearner = function(algorithm = "xgboost") {
   return(learner)
 }
 
-# Retrieve a learner and put a tuning wrapper around it
-# if the algorithm can be tuned
+# Retrieve a learning algorithm and put it into a wrapper for hyperparameter
+# tuning
 getTunedLearner = function(algorithm = "xgboost", maxiter = 10L, lambda = 10L) {
 
   # Retrieve the basic learner
@@ -100,12 +98,30 @@ getTunedLearner = function(algorithm = "xgboost", maxiter = 10L, lambda = 10L) {
   return(tunedLearner)
 }
 
-#' Train a learning algorithm and return the resulting model
+#' Train a learning algorithm and return the resulting model.
 #'
-#' @param algorithm
-#' @param task
+#' @param algorithm Name of the algorithm to be used.
+#' @param task A classification task as returned by [createTask()].
 #'
-#' @return
+#' @details The list of algorithms that can be used are:
+#'
+#' * `xgboost`: The XGBoost algorithm.
+#'
+#' * `knn`: The fast k-nearest neighbour algorithm fromt the `FNN` package.
+#'
+#' * `lda`: Linear discriminant analysis.
+#'
+#' * `qda`: Quadratic discriminant analysis applied to principal components.
+#'
+#' * `naiveBayes`: Naive Bayes classifier.
+#'
+#' * `logistic`: Logistic regression regularized with elasticnet grid penalty.
+#'
+#' * `svm`: Support vector machine with radial basis kernel (aka Gaussian kernel).
+#'
+#' * `randomForest`: Multithreaded random forest as implemented in the package `randomForestSRC`.
+#'
+#' @return A trained model that can be used to make predictions
 #' @export
 trainAlgorithm = function(algorithm = "xgboost", task) {
 
@@ -115,27 +131,33 @@ trainAlgorithm = function(algorithm = "xgboost", task) {
 }
 
 
-#' Use a trained model to predict the categories for a new dataset
+#' Use a trained model to predict to classify a sample into seeds or non-seed particles.
 #'
-#' @param model
-#' @param task
+#' @param model A trained model as returned by the function [trainAlgorithm()].
+#' @param task A classification task as returned by [createTask()].
 #'
-#' @return
+#' @return A list with results of the prediction:
+#'
+#' * `prediction`: Results of the prediction of class [mlr::Prediction].
+#'
+#' * `error`: Values of the balanced error rate (`ber`) and the mean mis-classification error (`mmce`)
+#' calculated from the prediction confusion matrix.
+#'
 #' @export
 classifySeeds = function(model, task) {
 
   data = mlr::getTaskData(task)
   prediction = predict(model, newdata = data)
-  score = c(mlr::performance(prediction, measures = mlr::ber),
-            mlr::performance(prediction, measures = mlr::mmce))
+  score = c(ber = mlr::performance(prediction, measures = mlr::ber),
+            mmce = mlr::performance(prediction, measures = mlr::mmce))
   return(list(prediction = prediction, error = score))
 }
 
 
-#' Tune the hyperparameters of an algorithm and train it with a given dataset
+#' Train a learning algorithm while tuning its hyperparameters and return the resulting model.
 #'
-#' @param algorithm
-#' @param task
+#' @param algorithm Name of the algorithm to be used (same as for [trainAlgorithm()]).
+#' @param task A classification task as returned by [createTask()].
 #' @param maxiter
 #' @param parallel
 #' @param nthreads
@@ -226,7 +248,7 @@ compareAlgorithmsInFile = function(learners, task, control) {
 # It returns an incomplete BenchmarkResult object (just with the measures)
 compareAlgorithmsAcrossFiles = function(learners, tasks, control) {
   # Generate all possible combinations of tasks
-  indices = generateIndices(tasks)
+  #indices = generateIndices(tasks)
   # Switch between parallel and sequential plans
   if(control$parallel) {
     future::plan(future::multiprocess)
@@ -234,7 +256,7 @@ compareAlgorithmsAcrossFiles = function(learners, tasks, control) {
     future::plan(future::sequential)
   }
   # Create the BenchmarkResult object
-  results = furrr::future_map(learners, function(x) innermap(x, tasks, indices))
+  results = furrr::future_map(learners, function(x) outermap(x, tasks))
   names(results) = purrr::map(learners, ~.x$id)
   result = structure(list(results = list(task = results), measures = list(mlr::ber),
                           learners = learners),
@@ -242,8 +264,7 @@ compareAlgorithmsAcrossFiles = function(learners, tasks, control) {
 }
 
 
-# Generate indices for combinations of tasks
-#' Title
+#' Generate indices for combinations of tasks
 #'
 #' @param tasks
 #'
@@ -253,28 +274,31 @@ generateIndices = function(tasks) {
   ntask = length(tasks)
   indices = cbind(rep(1:ntask, each = ntask), rep(1:ntask, times = ntask))
   indices = indices[which(indices[,1] != indices[,2]),]
+  colnames(indices) = c("train", "test")
   indices
 }
 
 # Produce a ResampleResult for a given learner
-innermap = function(learner, tasks, indices) {
-  results = furrr::future_map(1:nrow(indices), ~trainAndPredict(learner, tasks[[indices[.x,1]]],
-                                                                tasks[[indices[.x,2]]]))
+outermap = function(learner, tasks) {
+  # Outer loop over training task performed in parallel and the inner loop unnested
+  results = furrr::future_map(1:length(tasks), ~innermap(learner, tasks, .x)) %>%
+    unlist(recursive = FALSE)
+
   # Create the ResampleResult object
   task.id = NULL
   learner.id = learner$id
-  task.desc = mlr::getTaskDesc(tasks[[indices[1,1]]])
-  measures.train = data.frame(iter = 1:nrow(indices),
+  task.desc = mlr::getTaskDesc(tasks[[1]])
+  measures.train = data.frame(iter = 1:length(results),
                               ber = NA, mmce = NA)
-  measures.test = data.frame(iter = 1:nrow(indices),
+  measures.test = data.frame(iter = 1:length(results),
                              ber = purrr::map_dbl(results, ~.x[[2]][1]),
                              mmce = purrr::map_dbl(results, ~.x[[2]][2]))
   aggr = c(ber.test.mean = mean(measures.test$ber),
            mmce.test.mean = mean(measures.test$mmce))
   models = NULL
-  err.msgs = purrr::map(1:nrow(indices), ~list())
-  err.dumps = purrr::map(1:nrow(indices), ~list())
-  extract = purrr::map(1:nrow(indices), ~NULL)
+  err.msgs = purrr::map(1:length(results), ~list())
+  err.dumps = purrr::map(1:length(results), ~list())
+  extract = purrr::map(1:length(results), ~NULL)
   runtime = NA
   learner = learner
   pred = purrr::map(results, ~.x[[1]])
@@ -293,10 +317,13 @@ innermap = function(learner, tasks, indices) {
                  learner = learner), class = "ResampleResult")
 }
 
-# Function that, given two files, trains the algorithm on one file and predicts the other
-trainAndPredict = function(learner, trainset, testset) {
-  model =  mlr::train(learner, trainset)
-  prediction = classifySeeds(model, testset)
+# Train the algorithm on a given task and use it to make predictions in the rest of the tasks
+# This is the innermost loop in the comparison of algorithms across tasks
+innermap = function(learner, tasks, outer) {
+  # Train model on task determined by index outer
+  model = mlr::train(learner, tasks[[outer]])
+  # Loop over all tasks (except the one determined by outer) and make prediction
+  results = purrr::map(c(1:length(tasks))[-outer], ~classifySeeds(model, tasks[[.x]]))
 }
 
 

@@ -7,7 +7,17 @@
 classifySeeds(model, task)
 }
 \arguments{
-\item{task}{}
+\item{model}{A trained model as returned by the function \code{\link[=trainAlgorithm]{trainAlgorithm()}}.}
+
+\item{task}{A classification task as returned by \code{\link[=createTask]{createTask()}}}
+}
+\value{
+A list with results of the prediction:
+\itemize{
+\item \code{prediction}: Results of the prediction of type \link[mlr:PredictionResult]{mlr::PredictionResult}.
+\item \code{error}: Values of the balanced error rate (\code{ber}) and the mean mis-classification error (\code{mmce})
+calculated from the prediction confusion matrix.
+}
 }
 \description{
 Use a trained model to predict the categories for a new dataset

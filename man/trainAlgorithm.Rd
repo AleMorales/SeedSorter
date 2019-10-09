@@ -7,8 +7,26 @@
 trainAlgorithm(algorithm = "xgboost", task)
 }
 \arguments{
-\item{task}{}
+\item{algorithm}{Name of the algorithm to be used}
+
+\item{task}{A classification task as returned by \code{\link[=createTask]{createTask()}}}
+}
+\value{
+A trained model that can be used to make predictions
 }
 \description{
 Train a learning algorithm and return the resulting model
+}
+\details{
+The list of algorithms that can be used are:
+\itemize{
+\item \code{xgboost}: The XGBoost algorithm.
+\item \code{knn}: The fast k-nearest neighbour algorithm fromt the \code{FNN} package.
+\item \code{lda}: Linear discriminant analysis.
+\item \code{qda}: Quadratic discriminant analysis applied to principal components.
+\item \code{naiveBayes}: Naive Bayes classifier.
+\item \code{logistic}: Logistic regression regularized with elasticnet grid penalty.
+\item \code{svm}: Support vector machine with radial basis kernel (aka Gaussian kernel).
+\item \code{randomForest}: Multithreaded random forest as implemented in the package \code{randomForestSRC}.
+}
 }
