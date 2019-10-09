@@ -1,0 +1,17 @@
+Package: SeedSorter
+Type: Package
+Title: Supervised classification of seeds from flow cytometry
+Version: 0.1.0
+Author: Alejandro Morales <morales.s.alejandro@gmail.com>
+Maintainer: Alejandro Morales <morales.s.alejandro@gmail.com>
+Description: Uses data from large particle flow cytometers and 
+    classifies the individual particles into seeds and non-seed plant
+    material using a supervised classifier.
+License: MIT
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 6.1.1
+Imports: dplyr, tibble, forcats, ggplot2, parallelMap, xgboost, 
+         randomForestSRC, kernlab, glmnet, FNN, MASS, future, purrr, furrr, fst,
+         readr, magrittr, ParamHelpers
+Depends: mlr
