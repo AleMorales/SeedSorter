@@ -13,6 +13,6 @@ LazyData: true
 RoxygenNote: 6.1.1
 Imports: dplyr, tibble, forcats, ggplot2, parallelMap, xgboost, 
          randomForestSRC, kernlab, glmnet, FNN, MASS, future, purrr, furrr, fst,
-         readr, magrittr, ParamHelpers, caret, cmaes
+         readr, magrittr, ParamHelpers, caret, cmaes, e1071
 Depends: mlr
 Roxygen: list(markdown = TRUE)
