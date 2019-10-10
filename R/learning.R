@@ -303,14 +303,13 @@ compareAlgorithmsAcrossFiles = function(learners, tasks, control) {
 
 #' Generate indices for combinations of tasks
 #'
-#' @param tasks List of classification tasks.
+#' @param ntasks Number of tasks.
 #'
 #' @return A matrix with the indices that correspond to the tasks used for training and testing in a comparison
 #' of algorithms across tasks. These indices can be used to figure out to which tasks a particular prediction
 #' result belongs to.
 #' @export
-generateIndices = function(tasks) {
-  ntask = length(tasks)
+generateIndices = function(ntask) {
   indices = cbind(rep(1:ntask, each = ntask), rep(1:ntask, times = ntask))
   indices = indices[which(indices[,1] != indices[,2]),]
   colnames(indices) = c("train", "test")
@@ -319,14 +318,17 @@ generateIndices = function(tasks) {
 
 # Produce a ResampleResult for a given learner
 outermap = function(learner, tasks) {
+  trainTasks = tasks[[1]]
+  testTasks = tasks[[2]]
+  if(length(trainTasks) != length(testTasks)) stop("The length of training and testing tasks must be the same.")
   # Outer loop over training task performed in parallel and the inner loop unnested
-  results = furrr::future_map(1:length(tasks), ~innermap(learner, tasks, .x)) %>%
+  results = furrr::future_map(1:length(trainTasks), ~innermap(learner, trainTasks, testTasks, .x)) %>%
     unlist(recursive = FALSE)
 
   # Create the ResampleResult object
   task.id = NULL
   learner.id = learner$id
-  task.desc = mlr::getTaskDesc(tasks[[1]])
+  task.desc = mlr::getTaskDesc(trainTasks[[1]])
   measures.train = data.frame(iter = 1:length(results),
                               ber = NA, mmce = NA)
   measures.test = data.frame(iter = 1:length(results),
@@ -358,11 +360,11 @@ outermap = function(learner, tasks) {
 
 # Train the algorithm on a given task and use it to make predictions in the rest of the tasks
 # This is the innermost loop in the comparison of algorithms across tasks
-innermap = function(learner, tasks, outer) {
+innermap = function(learner, trainTasks, testTasks, outer) {
   # Train model on task determined by index outer
-  model = mlr::train(learner, tasks[[outer]])
+  model = mlr::train(learner, trainTasks[[outer]])
   # Loop over all tasks (except the one determined by outer) and make prediction
-  results = purrr::map(c(1:length(tasks))[-outer], ~classifySeeds(model, tasks[[.x]]))
+  results = purrr::map(c(1:length(testTasks))[-outer], ~classifySeeds(model, testTasks[[.x]]))
 }
 
 
