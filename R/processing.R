@@ -171,25 +171,27 @@ cleanSample = function(data, guess = 200) {
 #'
 #' @param data Tibble with the data for classification, as returned by the function [getData()] or [cleanSample()].
 #' @param id Name by which the data can be identified.
-#' @param smote Whether to use `smote` for oversampling of the minority class (default: `FALSE`).
+#' @param balance Whether to balance the dataset such that minority and majority classes have
+#' equal number of data.
+#' @param smote Whether to use `smote` for oversampling of the minority class (default: `TRUE`).
 #' @param nunder Rate by which the majority class is undersampled (default: 1).
 #'
-#' @details The under/oversampling will always produce a balanced classification task.
-#' When `nunder` = 1, only oversampling will be applied. When evaluating the performance
-#' of an algorithm within the same classification task, `smote` needs to be used to avoid
-#' overoptimistic evaluation of performance. When comparing across tasks, `smote` does not
-#' have to be used.
+#' @details When balancing: The under/oversampling will always produce a perfectly balanced
+#' classification task. When `nunder` = 1, only oversampling will be applied.
 #'
 #' @return A binary classification task (class [mlr::Task]).
 #' @export
-createTask = function(data, id = "cleanseeds", smote = FALSE, nunder = 1) {
+createTask = function(data, id = "cleanseeds", balance = TRUE, smote = TRUE, nunder = 1) {
   task = mlr::makeClassifTask(id = id, data = data, target = "Class", positive = "S")
   ratio = dplyr::group_by(data, Class) %>%
            dplyr::summarise(n = n()) %>% (function(x) max(x$n)/min(x$n))
-  if(smote)
-    task = mlr::smote(task, rate = ratio/nunder)
-  else
-    task = mlr::oversample(task, rate = ratio/nunder)
-  task = mlr::undersample(task, rate = 1/nunder)
+  if(balance) {
+    if(smote)
+      task = mlr::smote(task, rate = ratio/nunder)
+    else
+      task = mlr::oversample(task, rate = ratio/nunder)
+    task = mlr::undersample(task, rate = 1/nunder)
+  }
+
   return(task)
 }
