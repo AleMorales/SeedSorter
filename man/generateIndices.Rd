@@ -2,13 +2,18 @@
 % Please edit documentation in R/learning.R
 \name{generateIndices}
 \alias{generateIndices}
-\title{Title}
+\title{Generate indices for combinations of tasks}
 \usage{
 generateIndices(tasks)
 }
 \arguments{
-\item{tasks}{}
+\item{tasks}{List of classification tasks.}
+}
+\value{
+A matrix with the indices that correspond to the tasks used for training and testing in a comparison
+of algorithms across tasks. These indices can be used to figure out to which tasks a particular prediction
+result belongs to.
 }
 \description{
-Title
+Generate indices for combinations of tasks
 }

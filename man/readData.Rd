@@ -17,6 +17,3 @@ Returns a data.frame with all the features calculated from the data. Each row co
 \description{
 Read the data associated to a sorted sample
 }
-\examples{
-readData("main_file.txt", "profile.fst")
-}

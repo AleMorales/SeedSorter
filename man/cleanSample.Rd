@@ -7,7 +7,12 @@
 cleanSample(data, guess = 200)
 }
 \arguments{
-\item{guess}{}
+\item{data}{Tibble with the data for classification, as returned by the function \code{\link[=getData]{getData()}}.}
+
+\item{guess}{Initial guess for the thresold that separates seeds from dust particles in micrometers (default: 200).}
+}
+\value{
+The same as \code{data} but some of the particles are now reclassified as non-seed waste material.
 }
 \description{
 Use k-means clustering to separate waste from seeds using a size threshold as initial guess

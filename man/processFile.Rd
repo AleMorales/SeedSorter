@@ -18,6 +18,3 @@ is saved with all features extracted from the profile of each particle.
 Process a file with particle profiles and save a new file with features for
 classification
 }
-\examples{
-processFile("testdata.text")
-}

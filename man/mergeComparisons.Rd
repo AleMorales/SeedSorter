@@ -7,8 +7,15 @@
 mergeComparisons(comparisons)
 }
 \arguments{
-\item{comparisons}{}
+\item{comparisons}{List of results obtained by calling \code{compareAlgorithms}.}
+}
+\value{
+The result of merging the comparison objects, as an object of class \link[mlr:BenchmarkResults]{mlr::BenchmarkResults}.
 }
 \description{
 Merge results of multiple calls to \code{compareAlgorithms}
+}
+\details{
+This will produce a new object that merges the results from the different comparisons. This is useful
+when different settings are used to evaluate the performance of different algorithms.
 }

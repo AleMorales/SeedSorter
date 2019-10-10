@@ -121,7 +121,7 @@ getTunedLearner = function(algorithm = "xgboost", maxiter = 10L, lambda = 10L) {
 #'
 #' * `randomForest`: Multithreaded random forest as implemented in the package `randomForestSRC`.
 #'
-#' @return A trained model that can be used to make predictions
+#' @return A trained model that can be used to make predictions.
 #' @export
 trainAlgorithm = function(algorithm = "xgboost", task) {
 
@@ -156,16 +156,18 @@ classifySeeds = function(model, task) {
 
 #' Train a learning algorithm while tuning its hyperparameters and return the resulting model.
 #'
-#' @param algorithm Name of the algorithm to be used (same as for [trainAlgorithm()]).
+#' @param algorithm Name of the algorithm to be used (same algorithms as in [trainAlgorithm()]).
 #' @param task A classification task as returned by [createTask()].
-#' @param maxiter
-#' @param parallel
-#' @param nthreads
+#' @param maxiter Maximum number of iterations in the CMA-ES optimization of hyperparameters.
+#' @param lambda Number of offspring in each iteration of the CMA-ES optimization of hyperparameters.
+#' @param parallel Whether to use parallelization in the tuning of hyperparameters (default: `FALSE`).
+#' @param nthreads Number of threads/workers to use for parallelization.
 #'
-#' @return
+#' @details The following algorithms can be tuned using CMA-ES optimization: `xgboost`, `logistic`, `svm`. The
+#' algorithm `knn` is tuned using a grid search.
+#'
+#' @return A trained model that can be used to make predictions.
 #' @export
-#'
-#' @examples
 tuneAlgorithm = function(algorithm = "xgboost", task, maxiter = 10L, lambda = 10L,
                      parallel = FALSE, nthreads = parallel:::detectCores()) {
 
@@ -182,18 +184,53 @@ tuneAlgorithm = function(algorithm = "xgboost", task, maxiter = 10L, lambda = 10
 
 #' Compare performance of several algorithms on the same data, with or without hyperparameter tuning
 #'
-#' @param algorithms
-#' @param task
-#' @param tuning
-#' @param control
+#' @param algorithms Vector with the names of algorithms to be compared (same algorithms as in [trainAlgorithm()]).
+#' @param task Either one classification task for comparison using cross-validation or a list of tasks for
+#'      comparisons across tasks (see Details).
+#' @param tuning Whether to tune the learners or not (default: `FALSE`).
+#' @param control Optional list of settings (see Details).
 #'
-#' @return
+#' @details The comparison of algorithms differs depending on where a single classification task or multiple
+#' classification tasks are used. In the first approach, a repeated cross-validation scheme is used
+#' to partition the task into subsets multiple times, resulting in a comparison for each combination of
+#' subsets. If the algorithms are being tuned (which uses five-fold cross-validation), the resampling
+#' using for this tuning is nested within the training folds of the outer cross-validation scheme.
+#'
+#' In the second approach, each learner is trained on each tasks (without resampling) and used to make
+#' prediction on all other tasks. That is, if there are `n` tasks, this will result in `(n - 1)*n`
+#' predictions, performed with `n` trained models.
+#'
+#' Parallelization is always applied over the outermost loop for a given learner. That is, when comparing
+#' algorithms within one classification task, the parallization will be applied over the resampling
+#' iterations of the outer cross-validation scheme. When comparing across tasks, the parallelization will
+#' be applied over the tasks used for training the models.
+#'
+#' The following settings can be passed to the `control` argument:
+#'
+#' * `folds`: Number of cross-validation folds used in the outer resampling scheme when comparing algorithms
+#' within one task It has no effect when comparing algorithms across multiple tasks. Default: 5.
+#'
+#' * `reps`: Number of repetitions of the cross-validation in the outer resampling scheme when comparing algorithms
+#' within one task It has no effect when comparing algorithms across multiple tasks. Default: 3.
+#'
+#' * `parallel`: Whether to use parallelization or not. Default: `FALSE`.
+#'
+#' * `nthreads`: Number of threads/workers to be used for parallelization. Default is the number of cores as reported
+#' by `parallel::detectCores()`.
+#'
+#' * `maxiter`: Maximum number of iterations in the CMA-ES optimization of hyperparameters. Default: 10.
+#'
+#' * `lambda`: Number of offspring in each iteration of the CMA-ES optimization of hyperparameters. Default: 10.
+#'
+#' * `seed`: Random seed used for resampling schemes.
+#'
+#' @return The result of the comparison, as an object of class [mlr::BenchmarkResults].
 #' @export
 compareAlgorithms = function(algorithms, task, tuning = FALSE, control = list()) {
 
   # Set control values
   defaultControl = list(folds = 5, reps = 1, parallel = FALSE,
-                        nthreads = parallel:::detectCores(),
+                        nthreads = parallel::detectCores(),
                         maxiter = 10L, lambda = 10L,
                         seed = 2019)
   for(name in names(control)) {
@@ -266,9 +303,11 @@ compareAlgorithmsAcrossFiles = function(learners, tasks, control) {
 
 #' Generate indices for combinations of tasks
 #'
-#' @param tasks
+#' @param tasks List of classification tasks.
 #'
-#' @return
+#' @return A matrix with the indices that correspond to the tasks used for training and testing in a comparison
+#' of algorithms across tasks. These indices can be used to figure out to which tasks a particular prediction
+#' result belongs to.
 #' @export
 generateIndices = function(tasks) {
   ntask = length(tasks)
@@ -329,12 +368,13 @@ innermap = function(learner, tasks, outer) {
 
 #' Merge results of multiple calls to \code{compareAlgorithms}
 #'
-#' @param comparisons
+#' @param comparisons List of results obtained by calling \code{compareAlgorithms}.
 #'
-#' @return
+#' @details This will produce a new object that merges the results from the different comparisons. This is useful
+#' when different settings are used to evaluate the performance of different algorithms.
+#'
+#' @return The result of merging the comparison objects, as an object of class [mlr::BenchmarkResults].
 #' @export
-#'
-#' @examples
 mergeComparisons = function(comparisons) {
   mlr::mergeBenchmarkResults(as.list(comparisons))
 }

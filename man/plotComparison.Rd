@@ -2,13 +2,21 @@
 % Please edit documentation in R/visualization.R
 \name{plotComparison}
 \alias{plotComparison}
-\title{Generate boxplots with the performances of all the algorithms compared on the same data}
+\title{Generate a boxplot with the performance score of the algorithms}
 \usage{
 plotComparison(comparison)
 }
 \arguments{
-\item{comparison}{}
+\item{comparison}{The result of a comparison among algorithms as genearted by functions \code{\link[=compareAlgorithms]{compareAlgorithms()}} or
+\code{\link[=mergeComparisons]{mergeComparisons()}}.}
+}
+\value{
+A \code{ggplot} object.
 }
 \description{
-Generate boxplots with the performances of all the algorithms compared on the same data
+Generate a boxplot with the performance score of the algorithms
+}
+\details{
+Each datum corresponds to the prediction balanced error rate of a particular algorithm for a particular
+prediction task (either from resampling within one task or for different tasks, see \code{\link[=compareAlgorithms]{compareAlgorithms()}}).
 }

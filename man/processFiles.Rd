@@ -17,6 +17,3 @@ located.
 \description{
 Process files with particle profiles in a given folder
 }
-\examples{
-processFiles("rawdata")
-}

@@ -7,7 +7,12 @@
 createTask(data, id = "cleanseeds")
 }
 \arguments{
-\item{id}{}
+\item{data}{Tibble with the data for classification, as returned by the function \code{\link[=getData]{getData()}} or \code{\link[=cleanSample]{cleanSample()}}.}
+
+\item{id}{Name by which the data can be identified.}
+}
+\value{
+A binary classification task (class \link[mlr:Task]{mlr::Task}).
 }
 \description{
 Create classification task and apply under/oversampling

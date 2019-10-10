@@ -9,21 +9,22 @@ pretty_names = c(classif.xgboost = "Extreme Gradient Boosting",
                  classif.lda = "Linear Discriminant Analysis",
                  classif.glmnet.preproc = "Logistic Regresion Elastic Net",
                  classif.extinction = "Extinction threshold",
-
                  classif.xgboost.tuned = "Extreme Gradient Boosting",
                  classif.ksvm.preproc.tuned = "Support Vector Machine",
                  classif.kknn.preproc.tuned = "K-Nearest Neighbours",
                  classif.glmnet.preproc.tuned = "Logistic Regresion Elastic Net")
 
 
-#' Generate boxplots with the performances of all the algorithms compared on the same data
+#' Generate a boxplot with the performance score of the algorithms
 #'
-#' @param comparison
+#' @param comparison The result of a comparison among algorithms as genearted by functions [compareAlgorithms()] or
+#' [mergeComparisons()].
 #'
-#' @return
+#' @details Each datum corresponds to the prediction balanced error rate of a particular algorithm for a particular
+#' prediction task (either from resampling within one task or for different tasks, see [compareAlgorithms()]).
+#'
+#' @return A `ggplot` object.
 #' @export
-#'
-#' @examples
 plotComparison = function(comparison) {
 
   # Calculate performances

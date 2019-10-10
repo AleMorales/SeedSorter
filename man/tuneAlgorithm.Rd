@@ -2,15 +2,32 @@
 % Please edit documentation in R/learning.R
 \name{tuneAlgorithm}
 \alias{tuneAlgorithm}
-\title{Tune the hyperparameters of an algorithm and train it with a given dataset}
+\title{Train a learning algorithm while tuning its hyperparameters and return the resulting model.}
 \usage{
 tuneAlgorithm(algorithm = "xgboost", task, maxiter = 10L,
   lambda = 10L, parallel = FALSE,
   nthreads = parallel:::detectCores())
 }
 \arguments{
-\item{nthreads}{}
+\item{algorithm}{Name of the algorithm to be used (same algorithms as in \code{\link[=trainAlgorithm]{trainAlgorithm()}}).}
+
+\item{task}{A classification task as returned by \code{\link[=createTask]{createTask()}}.}
+
+\item{maxiter}{Maximum number of iterations in the CMA-ES optimization of hyperparameters.}
+
+\item{lambda}{Number of offspring in each iteration of the CMA-ES optimization of hyperparameters.}
+
+\item{parallel}{Whether to use parallelization in the tuning of hyperparameters (default: \code{FALSE}).}
+
+\item{nthreads}{Number of threads/workers to use for parallelization.}
+}
+\value{
+A trained model that can be used to make predictions.
 }
 \description{
-Tune the hyperparameters of an algorithm and train it with a given dataset
+Train a learning algorithm while tuning its hyperparameters and return the resulting model.
+}
+\details{
+The following algorithms can be tuned using CMA-ES optimization: \code{xgboost}, \code{logistic}, \code{svm}. The
+algorithm \code{knn} is tuned using a grid search.
 }

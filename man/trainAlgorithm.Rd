@@ -2,20 +2,20 @@
 % Please edit documentation in R/learning.R
 \name{trainAlgorithm}
 \alias{trainAlgorithm}
-\title{Train a learning algorithm and return the resulting model}
+\title{Train a learning algorithm and return the resulting model.}
 \usage{
 trainAlgorithm(algorithm = "xgboost", task)
 }
 \arguments{
-\item{algorithm}{Name of the algorithm to be used}
+\item{algorithm}{Name of the algorithm to be used.}
 
-\item{task}{A classification task as returned by \code{\link[=createTask]{createTask()}}}
+\item{task}{A classification task as returned by \code{\link[=createTask]{createTask()}}.}
 }
 \value{
-A trained model that can be used to make predictions
+A trained model that can be used to make predictions.
 }
 \description{
-Train a learning algorithm and return the resulting model
+Train a learning algorithm and return the resulting model.
 }
 \details{
 The list of algorithms that can be used are:
