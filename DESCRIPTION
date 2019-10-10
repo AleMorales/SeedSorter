@@ -7,7 +7,7 @@ Maintainer: Alejandro Morales <morales.s.alejandro@gmail.com>
 Description: Uses data from large particle flow cytometers and 
     classifies the individual particles into seeds and non-seed plant
     material using a supervised classifier.
-License: MIT
+License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 6.1.1
