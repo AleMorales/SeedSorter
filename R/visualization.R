@@ -2,8 +2,8 @@
 # To make sure that the labels of the figures are humand readable
 pretty_names = c(classif.xgboost = "Extreme Gradient Boosting",
                  classif.ksvm.preproc = "Support Vector Machine",
-                 classif.randomForest = "Random Forest",
-                 classif.kknn.preproc = "K-Nearest Neighbours",
+                 classif.randomForestSRC = "Random Forest",
+                 classif.fnn.preproc = "K-Nearest Neighbours",
                  classif.qda.preproc  = "Quadratic Discriminant Analysis",
                  classif.naiveBayes = "Naive Bayes",
                  classif.lda = "Linear Discriminant Analysis",
@@ -11,7 +11,7 @@ pretty_names = c(classif.xgboost = "Extreme Gradient Boosting",
                  classif.extinction = "Extinction threshold",
                  classif.xgboost.tuned = "Extreme Gradient Boosting",
                  classif.ksvm.preproc.tuned = "Support Vector Machine",
-                 classif.kknn.preproc.tuned = "K-Nearest Neighbours",
+                 classif.fnn.preproc.tuned = "K-Nearest Neighbours",
                  classif.glmnet.preproc.tuned = "Logistic Regresion Elastic Net")
 
 
@@ -35,7 +35,7 @@ plotComparison = function(comparison) {
   # Generate the plot
   plot = ggplot2::ggplot(perf, ggplot2::aes(x = forcats::fct_reorder(method, ber), y = ber*100)) +
           ggplot2::geom_boxplot() +
-          ggplot2::geom_jitter(width = 0.1, alpha = 0.5) +
+          ggplot2::geom_jitter(width = 0.3, alpha = 0.5) +
           ggplot2::coord_flip() +
           ggplot2::xlab("") +
           ggplot2::ylab('Balanced error rate (%)') +
