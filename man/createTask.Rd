@@ -4,16 +4,27 @@
 \alias{createTask}
 \title{Create classification task and apply under/oversampling}
 \usage{
-createTask(data, id = "cleanseeds")
+createTask(data, id = "cleanseeds", smote = FALSE, nunder = 1)
 }
 \arguments{
 \item{data}{Tibble with the data for classification, as returned by the function \code{\link[=getData]{getData()}} or \code{\link[=cleanSample]{cleanSample()}}.}
 
 \item{id}{Name by which the data can be identified.}
+
+\item{smote}{Whether to use \code{smote} for oversampling of the minority class (default: \code{FALSE}).}
+
+\item{nunder}{Rate by which the majority class is undersampled (default: 1).}
 }
 \value{
 A binary classification task (class \link[mlr:Task]{mlr::Task}).
 }
 \description{
 Create classification task and apply under/oversampling
+}
+\details{
+The under/oversampling will always produce a balanced classification task.
+When \code{nunder} = 1, only oversampling will be applied. When evaluating the performance
+of an algorithm within the same classification task, \code{smote} needs to be used to avoid
+overoptimistic evaluation of performance. When comparing across tasks, \code{smote} does not
+have to be used.
 }
