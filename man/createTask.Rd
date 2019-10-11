@@ -2,30 +2,18 @@
 % Please edit documentation in R/processing.R
 \name{createTask}
 \alias{createTask}
-\title{Create classification task and apply under/oversampling}
+\title{Create classification task from a dataset}
 \usage{
-createTask(data, id = "cleanseeds", balance = TRUE, smote = TRUE,
-  nunder = 1)
+createTask(data, id = "cleanseeds")
 }
 \arguments{
 \item{data}{Tibble with the data for classification, as returned by the function \code{\link[=getData]{getData()}} or \code{\link[=cleanSample]{cleanSample()}}.}
 
 \item{id}{Name by which the data can be identified.}
-
-\item{balance}{Whether to balance the dataset such that minority and majority classes have
-equal number of data.}
-
-\item{smote}{Whether to use \code{smote} for oversampling of the minority class (default: \code{TRUE}).}
-
-\item{nunder}{Rate by which the majority class is undersampled (default: 1).}
 }
 \value{
 A binary classification task (class \link[mlr:Task]{mlr::Task}).
 }
 \description{
-Create classification task and apply under/oversampling
-}
-\details{
-When balancing: The under/oversampling will always produce a perfectly balanced
-classification task. When \code{nunder} = 1, only oversampling will be applied.
+Create classification task from a dataset
 }

@@ -1,18 +1,18 @@
 
 # To make sure that the labels of the figures are humand readable
-pretty_names = c(classif.xgboost = "Extreme Gradient Boosting",
-                 classif.ksvm.preproc = "Support Vector Machine",
-                 classif.randomForestSRC = "Random Forest",
-                 classif.fnn.preproc = "K-Nearest Neighbours",
-                 classif.qda.preproc  = "Quadratic Discriminant Analysis",
-                 classif.naiveBayes = "Naive Bayes",
-                 classif.lda = "Linear Discriminant Analysis",
-                 classif.glmnet.preproc = "Logistic Regresion Elastic Net",
-                 classif.extinction = "Extinction threshold",
-                 classif.xgboost.tuned = "Extreme Gradient Boosting",
-                 classif.ksvm.preproc.tuned = "Support Vector Machine",
-                 classif.fnn.preproc.tuned = "K-Nearest Neighbours",
-                 classif.glmnet.preproc.tuned = "Logistic Regresion Elastic Net")
+pretty_names = c(classif.xgboost.oversampled = "Extreme Gradient Boosting",
+                 classif.ksvm.oversampled.preproc = "Support Vector Machine",
+                 classif.randomForestSRC.oversampled = "Random Forest",
+                 classif.fnn.oversampled.preproc = "K-Nearest Neighbours",
+                 classif.qda.oversampled.preproc  = "Quadratic Discriminant Analysis",
+                 classif.naiveBayes.oversampled = "Naive Bayes",
+                 classif.lda.oversampled = "Linear Discriminant Analysis",
+                 classif.glmnet.oversampled.preproc = "Logistic Regresion Elastic Net",
+                 classif.extinction.oversampled = "Extinction threshold",
+                 classif.xgboost.oversampled.tuned = "Extreme Gradient Boosting",
+                 classif.ksvm.oversampled.preproc.tuned = "Support Vector Machine",
+                 classif.fnn.oversampled.preproc.tuned = "K-Nearest Neighbours",
+                 classif.glmnet.oversampled.preproc.tuned = "Logistic Regresion Elastic Net")
 
 
 #' Generate a boxplot with the performance score of the algorithms

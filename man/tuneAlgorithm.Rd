@@ -4,8 +4,8 @@
 \alias{tuneAlgorithm}
 \title{Train a learning algorithm while tuning its hyperparameters and return the resulting model.}
 \usage{
-tuneAlgorithm(algorithm = "xgboost", task, maxiter = 10L,
-  lambda = 10L, parallel = FALSE,
+tuneAlgorithm(algorithm = "xgboost", task, osw.rate = 10,
+  maxiter = 10L, lambda = 10L, parallel = FALSE,
   nthreads = parallel:::detectCores())
 }
 \arguments{
@@ -28,6 +28,6 @@ A trained model that can be used to make predictions.
 Train a learning algorithm while tuning its hyperparameters and return the resulting model.
 }
 \details{
-The following algorithms can be tuned using CMA-ES optimization: \code{xgboost}, \code{logistic}, \code{svm}. The
-algorithm \code{knn} is tuned using a grid search.
+The following algorithms can be tuned using CMA-ES optimization: \code{xgboost}, \code{logistic},
+\code{svm} and \code{knn}.
 }

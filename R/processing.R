@@ -167,31 +167,16 @@ cleanSample = function(data, guess = 200) {
 
 
 
-#'Create classification task and apply under/oversampling
+#'Create classification task from a dataset
 #'
 #' @param data Tibble with the data for classification, as returned by the function [getData()] or [cleanSample()].
 #' @param id Name by which the data can be identified.
-#' @param balance Whether to balance the dataset such that minority and majority classes have
-#' equal number of data.
-#' @param smote Whether to use `smote` for oversampling of the minority class (default: `TRUE`).
-#' @param nunder Rate by which the majority class is undersampled (default: 1).
-#'
-#' @details When balancing: The under/oversampling will always produce a perfectly balanced
-#' classification task. When `nunder` = 1, only oversampling will be applied.
+
 #'
 #' @return A binary classification task (class [mlr::Task]).
 #' @export
-createTask = function(data, id = "cleanseeds", balance = TRUE, smote = TRUE, nunder = 1) {
+createTask = function(data, id = "cleanseeds") {
   task = mlr::makeClassifTask(id = id, data = data, target = "Class", positive = "S")
-  ratio = dplyr::group_by(data, Class) %>%
-           dplyr::summarise(n = n()) %>% (function(x) max(x$n)/min(x$n))
-  if(balance) {
-    if(smote)
-      task = mlr::smote(task, rate = ratio/nunder)
-    else
-      task = mlr::oversample(task, rate = ratio/nunder)
-    task = mlr::undersample(task, rate = 1/nunder)
-  }
 
   return(task)
 }

@@ -1,38 +1,46 @@
 # Retrieve a learning algorithm
-getLearner = function(algorithm = "xgboost") {
+getLearner = function(algorithm = "xgboost", osw.rate = 10) {
 
   # Depending on the type of algorithm, add different pre-processing steps
   if(algorithm == "xgboost") {
     learner = mlr::makeLearner(cl = "classif.xgboost",
-                         par.vals = list(objective = "binary:logistic", nthread = 2))
+                         par.vals = list(objective = "binary:logistic", nthread = 2)) %>%
+              mlr::makeOversampleWrapper(osw.rate = osw.rate)
 
   } else if(algorithm == "knn") {
     learner = mlr::makeLearner(cl = "classif.fnn") %>%
+              mlr::makeOversampleWrapper(osw.rate = osw.rate) %>%
               mlr::makePreprocWrapperCaret(method = c("center", "scale"))
 
   } else if(algorithm == "lda") {
-    learner = mlr::makeLearner(cl = "classif.lda")
+    learner = mlr::makeLearner(cl = "classif.lda") %>%
+              mlr::makeOversampleWrapper(osw.rate = osw.rate)
 
   } else if(algorithm == "qda") {
     learner = mlr::makeLearner(cl = "classif.qda") %>%
+              mlr::makeOversampleWrapper(osw.rate = osw.rate) %>%
               mlr::makePreprocWrapperCaret(ppc.pca = TRUE)
 
   } else if(algorithm == "naiveBayes") {
     learner = mlr::makeLearner(cl = "classif.naiveBayes")
 
   } else if(algorithm == "logistic") {
-    learner = mlr::makeLearner(cl = "classif.glmnet", predict.type = "prob") %>%
+    learner = mlr::makeLearner(cl = "classif.glmnet") %>%
+              mlr::makeOversampleWrapper(osw.rate = osw.rate) %>%
               mlr::makePreprocWrapperCaret(method = c("center", "scale"))
 
   } else if (algorithm == "svm") {
     learner = mlr::makeLearner(cl = "classif.ksvm") %>%
+              mlr::makeOversampleWrapper(osw.rate = osw.rate) %>%
               mlr::makePreprocWrapperCaret(method = c("center", "scale"))
 
   } else if (algorithm == "randomforest") {
-    learner = mlr::makeLearner(cl = "classif.randomForestSRC", par.vals = list(ntree = 250))
+    learner = mlr::makeLearner(cl = "classif.randomForestSRC", par.vals = list(ntree = 250))  %>%
+              mlr::makeOversampleWrapper(osw.rate = osw.rate)
 
   } else if (algorithm == "extinction") {
-    learner = mlr::makeLearner(cl = "classif.extinction")
+    learner = mlr::makeLearner(cl = "classif.extinction") %>%
+              mlr::makeOversampleWrapper(osw.rate = osw.rate)
 
   } else {
     stop(paste0("Algorithm not supported: ", algorithm))
@@ -43,10 +51,10 @@ getLearner = function(algorithm = "xgboost") {
 
 # Retrieve a learning algorithm and put it into a wrapper for hyperparameter
 # tuning
-getTunedLearner = function(algorithm = "xgboost", maxiter = 10L, lambda = 10L) {
+getTunedLearner = function(algorithm = "xgboost", osw.rate = 10, maxiter = 10L, lambda = 10L) {
 
   # Retrieve the basic learner
-  learner = getLearner(algorithm)
+  learner = getLearner(algorithm, osw.rate)
 
   # Define the list of hyperparameters to be tuned depending on the algorithm
   if(algorithm == "xgboost") {
@@ -60,7 +68,7 @@ getTunedLearner = function(algorithm = "xgboost", maxiter = 10L, lambda = 10L) {
 
   } else if (algorithm == "knn") {
     paramlist = ParamHelpers::makeParamSet(
-      ParamHelpers::makeIntegerParam("k", lower = 1, upper= 25))
+      ParamHelpers::makeIntegerParam("k", lower = 1, upper= 100))
 
   } else if(algorithm == "logistic") {
     paramlist = ParamHelpers::makeParamSet(
@@ -70,7 +78,7 @@ getTunedLearner = function(algorithm = "xgboost", maxiter = 10L, lambda = 10L) {
   } else if(algorithm == "svm") {
     paramlist = ParamHelpers::makeParamSet(
       ParamHelpers::makeNumericParam("C", lower = -1, upper = 1, trafo = function(x) 10^x),
-      ParamHelpers::makeNumericParam("sigma", lower = -1, upper = 1, trafo = function(x) 10^x))
+      ParamHelpers::makeNumericParam("sigma", lower = -0.5, upper = 1.5, trafo = function(x) 10^x))
 
   # Certain algorithms are simply not tuned, so we can skip the tuning wrapper...
   } else {
@@ -80,16 +88,11 @@ getTunedLearner = function(algorithm = "xgboost", maxiter = 10L, lambda = 10L) {
   # Resampling strategy for tuning is always 5-fold cv
   resampling = mlr::makeResampleDesc("CV",iters = 5, stratify = TRUE)
 
-  # Measure to be minimized is mean misclassification error
+  # Measure to be minimized is balanced error rate
   measure = mlr::ber
 
-  # By default the parameters are optimized with CMA-ES, except for
-  # K-Nearest Neighbours where a grid system (with the same budget) is used
-  if(algorithm == "knn") {
-    control = mlr::makeTuneControlGrid(resolution = 10)
-  } else {
-    control = mlr::makeTuneControlCMAES(budget = maxiter*lambda, lambda = lambda)
-  }
+  # By default the parameters are optimized with CMA-ES
+  control = mlr::makeTuneControlCMAES(budget = maxiter*lambda, lambda = lambda)
 
   # Finally, wrap everything into an autotuning object
   tunedLearner = mlr::makeTuneWrapper(learner = learner, resampling = resampling,
@@ -123,9 +126,9 @@ getTunedLearner = function(algorithm = "xgboost", maxiter = 10L, lambda = 10L) {
 #'
 #' @return A trained model that can be used to make predictions.
 #' @export
-trainAlgorithm = function(algorithm = "xgboost", task) {
+trainAlgorithm = function(algorithm = "xgboost", task, osw.rate = 10) {
 
-  learner = getLearner(algorithm)
+  learner = getLearner(algorithm, osw.rate)
   model = mlr::train(learner, task)
   return(model)
 }
@@ -163,15 +166,15 @@ classifySeeds = function(model, task) {
 #' @param parallel Whether to use parallelization in the tuning of hyperparameters (default: `FALSE`).
 #' @param nthreads Number of threads/workers to use for parallelization.
 #'
-#' @details The following algorithms can be tuned using CMA-ES optimization: `xgboost`, `logistic`, `svm`. The
-#' algorithm `knn` is tuned using a grid search.
+#' @details The following algorithms can be tuned using CMA-ES optimization: `xgboost`, `logistic`,
+#' `svm` and `knn`.
 #'
 #' @return A trained model that can be used to make predictions.
 #' @export
-tuneAlgorithm = function(algorithm = "xgboost", task, maxiter = 10L, lambda = 10L,
+tuneAlgorithm = function(algorithm = "xgboost", task, osw.rate = 10, maxiter = 10L, lambda = 10L,
                      parallel = FALSE, nthreads = parallel:::detectCores()) {
 
-  learner = getTunedLearner(algorithm, maxiter, lambda)
+  learner = getTunedLearner(algorithm, osw.rate, maxiter, lambda)
   if(parallel) {
     parallelMap::parallelStart(mode = "socket", cpus = nthreads, level = "mlr.tuneParams")
     model = mlr::train(learner, task)
@@ -232,7 +235,7 @@ compareAlgorithms = function(algorithms, task, tuning = FALSE, control = list())
   defaultControl = list(folds = 5, reps = 1, parallel = FALSE,
                         nthreads = parallel::detectCores(),
                         maxiter = 10L, lambda = 10L,
-                        seed = 2019)
+                        seed = 2019, osw.rate = 10)
   for(name in names(control)) {
     defaultControl[[name]] = control[[name]]
   }
@@ -246,9 +249,9 @@ compareAlgorithms = function(algorithms, task, tuning = FALSE, control = list())
   learners = vector("list", length(algorithms))
   for(i in 1:length(algorithms)) {
     if(tuning)
-      learners[[i]] = getTunedLearner(algorithms[i], control$maxiter, control$lambda)
+      learners[[i]] = getTunedLearner(algorithms[i], control$osw.rate, control$maxiter, control$lambda)
     else
-      learners[[i]] = getLearner(algorithms[i])
+      learners[[i]] = getLearner(algorithms[i], control$osw.rate)
   }
 
   # If one task, then run canonical benchmark from mlr.
@@ -318,17 +321,14 @@ generateIndices = function(ntask) {
 
 # Produce a ResampleResult for a given learner
 outermap = function(learner, tasks) {
-  trainTasks = tasks[[1]]
-  testTasks = tasks[[2]]
-  if(length(trainTasks) != length(testTasks)) stop("The length of training and testing tasks must be the same.")
   # Outer loop over training task performed in parallel and the inner loop unnested
-  results = furrr::future_map(1:length(trainTasks), ~innermap(learner, trainTasks, testTasks, .x)) %>%
+  results = furrr::future_map(1:length(tasks), ~innermap(learner, tasks, .x)) %>%
     unlist(recursive = FALSE)
 
   # Create the ResampleResult object
   task.id = NULL
   learner.id = learner$id
-  task.desc = mlr::getTaskDesc(trainTasks[[1]])
+  task.desc = mlr::getTaskDesc(tasks[[1]])
   measures.train = data.frame(iter = 1:length(results),
                               ber = NA, mmce = NA)
   measures.test = data.frame(iter = 1:length(results),
@@ -360,11 +360,11 @@ outermap = function(learner, tasks) {
 
 # Train the algorithm on a given task and use it to make predictions in the rest of the tasks
 # This is the innermost loop in the comparison of algorithms across tasks
-innermap = function(learner, trainTasks, testTasks, outer) {
+innermap = function(learner, tasks, outer) {
   # Train model on task determined by index outer
-  model = mlr::train(learner, trainTasks[[outer]])
+  model = mlr::train(learner, tasks[[outer]])
   # Loop over all tasks (except the one determined by outer) and make prediction
-  results = purrr::map(c(1:length(testTasks))[-outer], ~classifySeeds(model, testTasks[[.x]]))
+  results = purrr::map(c(1:length(tasks))[-outer], ~classifySeeds(model, tasks[[.x]]))
 }
 
 

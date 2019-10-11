@@ -4,10 +4,10 @@
 \alias{generateIndices}
 \title{Generate indices for combinations of tasks}
 \usage{
-generateIndices(tasks)
+generateIndices(ntask)
 }
 \arguments{
-\item{tasks}{List of classification tasks.}
+\item{ntasks}{Number of tasks.}
 }
 \value{
 A matrix with the indices that correspond to the tasks used for training and testing in a comparison

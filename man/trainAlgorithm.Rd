@@ -4,7 +4,7 @@
 \alias{trainAlgorithm}
 \title{Train a learning algorithm and return the resulting model.}
 \usage{
-trainAlgorithm(algorithm = "xgboost", task)
+trainAlgorithm(algorithm = "xgboost", task, osw.rate = 10)
 }
 \arguments{
 \item{algorithm}{Name of the algorithm to be used.}
