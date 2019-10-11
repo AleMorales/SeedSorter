@@ -1,45 +1,47 @@
 # Retrieve a learning algorithm
-getLearner = function(algorithm = "xgboost", osw.rate = 10) {
+getLearner = function(algorithm = "xgboost", osw.rate = 10, predict.type = "response") {
 
   # Depending on the type of algorithm, add different pre-processing steps
   if(algorithm == "xgboost") {
-    learner = mlr::makeLearner(cl = "classif.xgboost",
+    learner = mlr::makeLearner(cl = "classif.xgboost", predict.type =  predict.type,
                          par.vals = list(objective = "binary:logistic", nthread = 2)) %>%
               mlr::makeOversampleWrapper(osw.rate = osw.rate)
 
   } else if(algorithm == "knn") {
-    learner = mlr::makeLearner(cl = "classif.fnn") %>%
+    learner = mlr::makeLearner(cl = "classif.fnn", predict.type =  predict.type) %>%
               mlr::makeOversampleWrapper(osw.rate = osw.rate) %>%
               mlr::makePreprocWrapperCaret(method = c("center", "scale"))
 
   } else if(algorithm == "lda") {
-    learner = mlr::makeLearner(cl = "classif.lda") %>%
+    learner = mlr::makeLearner(cl = "classif.lda", predict.type =  predict.type) %>%
               mlr::makeOversampleWrapper(osw.rate = osw.rate)
 
   } else if(algorithm == "qda") {
-    learner = mlr::makeLearner(cl = "classif.qda") %>%
+    learner = mlr::makeLearner(cl = "classif.qda", predict.type =  predict.type) %>%
               mlr::makeOversampleWrapper(osw.rate = osw.rate) %>%
               mlr::makePreprocWrapperCaret(ppc.pca = TRUE)
 
   } else if(algorithm == "naiveBayes") {
-    learner = mlr::makeLearner(cl = "classif.naiveBayes")
+    learner = mlr::makeLearner(cl = "classif.naiveBayes", predict.type =  predict.type) %>%
+      mlr::makeOversampleWrapper(osw.rate = osw.rate)
 
   } else if(algorithm == "logistic") {
-    learner = mlr::makeLearner(cl = "classif.glmnet") %>%
+    learner = mlr::makeLearner(cl = "classif.glmnet", predict.type =  predict.type) %>%
               mlr::makeOversampleWrapper(osw.rate = osw.rate) %>%
               mlr::makePreprocWrapperCaret(method = c("center", "scale"))
 
   } else if (algorithm == "svm") {
-    learner = mlr::makeLearner(cl = "classif.ksvm") %>%
+    learner = mlr::makeLearner(cl = "classif.ksvm", predict.type =  predict.type) %>%
               mlr::makeOversampleWrapper(osw.rate = osw.rate) %>%
               mlr::makePreprocWrapperCaret(method = c("center", "scale"))
 
   } else if (algorithm == "randomforest") {
-    learner = mlr::makeLearner(cl = "classif.randomForestSRC", par.vals = list(ntree = 250))  %>%
+    learner = mlr::makeLearner(cl = "classif.randomForestSRC", predict.type =  predict.type,
+                               par.vals = list(ntree = 250))  %>%
               mlr::makeOversampleWrapper(osw.rate = osw.rate)
 
   } else if (algorithm == "extinction") {
-    learner = mlr::makeLearner(cl = "classif.extinction") %>%
+    learner = mlr::makeLearner(cl = "classif.extinction", predict.type =  predict.type) %>%
               mlr::makeOversampleWrapper(osw.rate = osw.rate)
 
   } else {
@@ -49,12 +51,31 @@ getLearner = function(algorithm = "xgboost", osw.rate = 10) {
   return(learner)
 }
 
-# Retrieve a learning algorithm and put it into a wrapper for hyperparameter
-# tuning
-getTunedLearner = function(algorithm = "xgboost", osw.rate = 10, maxiter = 10L, lambda = 10L) {
+# BER metric for ensemble hill climbing algorithm
+metricBER = function(pred, true) {
+  pred = colnames(pred)[max.col(pred)] # Find prediction with maximum prob
+  tb = table(true, pred) # Cross tabulation
+  ber = 0.5*(tb[1,2]/(tb[1,1] + tb[1,2]) + tb[2,1]/(tb[2,1] + tb[2,2]))
+  return(ber)
+  #return(1 - sum(diag(tb)) / sum(tb))
+}
+
+# Retrieve a stacked ensemble
+getEnsemble = function(algorithms = c("extinction", "naiveBayes", "lda", "qda"), osw.rate = 10) {
+  # Retrieve the individual learners
+  learners  = purrr::map(algorithms, getLearner, osw.rate = osw.rate, predict.type =  "prob")
+  # Make stacked ensemble with hill.climb weights
+  ensemble = mlr::makeStackedLearner(base.learners = learners, method = "hill.climb", predict.type = "prob",
+                                parset = list(metric = metricBER))
+}
+
+
+# Retrieve a learning algorithm and put it into a wrapper for hyperparameter tuning
+getTunedLearner = function(algorithm = "xgboost", osw.rate = 10, maxiter = 10L, lambda = 10L,
+                           predict.type =  "response") {
 
   # Retrieve the basic learner
-  learner = getLearner(algorithm, osw.rate)
+  learner = getLearner(algorithm, osw.rate, predict.type)
 
   # Define the list of hyperparameters to be tuned depending on the algorithm
   if(algorithm == "xgboost") {
@@ -101,6 +122,18 @@ getTunedLearner = function(algorithm = "xgboost", osw.rate = 10, maxiter = 10L, 
   return(tunedLearner)
 }
 
+
+# Retrieve a stacked ensemble with tuned learners
+getTunedEnsemble = function(algorithms = c("extinction", "naiveBayes", "lda", "qda"),
+                            osw.rate = 10, maxiter = 10L, lambda = 10L) {
+  # Retrieve the individual learners
+  learners  = purrr::map(algorithms, getTunedLearner, osw.rate = osw.rate, maxiter = maxiter,
+                         lambda = lambda, predict.type = "prob")
+  # Make stacked ensemble with hill.climb weights
+  ensemble = mlr::makeStackedLearner(base.learners = learners, method = "hill.climb", predict.type = "prob",
+                                     parset = list(metric = metricBER))
+}
+
 #' Train a learning algorithm and return the resulting model.
 #'
 #' @param algorithm Name of the algorithm to be used.
@@ -133,6 +166,24 @@ trainAlgorithm = function(algorithm = "xgboost", task, osw.rate = 10) {
   return(model)
 }
 
+#' Train a stacked ensemble of learning algorithms and return the resulting model.
+#'
+#' @param algorithms Names of the algorithm to be used as a character vector.
+#' @param task A classification task as returned by [createTask()].
+#'
+#' @details The list of algorithms that can be used are the same as for [trainAlgorithm()].
+#' The stacked ensemble calculates a weight for each algorithm based on a hill climbing approach.
+#'
+#' @return A trained model that can be used to make predictions.
+#' @export
+trainEnsemble = function(algorithms = c("extinction", "naiveBayes", "lda", "qda"),
+                         task, osw.rate = 10) {
+
+  ensemble = getEnsemble(algorithms, osw.rate)
+  model = mlr::train(ensemble, task)
+  return(model)
+}
+
 
 #' Use a trained model to predict to classify a sample into seeds or non-seed particles.
 #'
@@ -157,7 +208,7 @@ classifySeeds = function(model, task) {
 }
 
 
-#' Train a learning algorithm while tuning its hyperparameters and return the resulting model.
+#' Train an algorithm while tuning its hyperparameters and return the resulting model.
 #'
 #' @param algorithm Name of the algorithm to be used (same algorithms as in [trainAlgorithm()]).
 #' @param task A classification task as returned by [createTask()].
@@ -172,7 +223,7 @@ classifySeeds = function(model, task) {
 #' @return A trained model that can be used to make predictions.
 #' @export
 tuneAlgorithm = function(algorithm = "xgboost", task, osw.rate = 10, maxiter = 10L, lambda = 10L,
-                     parallel = FALSE, nthreads = parallel:::detectCores()) {
+                         parallel = FALSE, nthreads = parallel:::detectCores()) {
 
   learner = getTunedLearner(algorithm, osw.rate, maxiter, lambda)
   if(parallel) {
@@ -184,6 +235,38 @@ tuneAlgorithm = function(algorithm = "xgboost", task, osw.rate = 10, maxiter = 1
   }
   return(model)
 }
+
+
+#' Train a stacked ensemble of algorithms while tuning its hyperparameters and return the resulting model.
+#'
+#' @param algorithms Names of the algorithm to be used as a character vector
+#' (same algorithms as in [trainAlgorithm()]).
+#' @param task A classification task as returned by [createTask()].
+#' @param maxiter Maximum number of iterations in the CMA-ES optimization of hyperparameters.
+#' @param lambda Number of offspring in each iteration of the CMA-ES optimization of hyperparameters.
+#' @param parallel Whether to use parallelization in the tuning of hyperparameters (default: `FALSE`).
+#' @param nthreads Number of threads/workers to use for parallelization.
+#'
+#' @details The following algorithms can be tuned using CMA-ES optimization: `xgboost`, `logistic`,
+#' `svm` and `knn`.
+#'
+#' @return A trained model that can be used to make predictions.
+#' @export
+tuneEnsemble = function(algorithms = c("extinction", "naiveBayes", "lda", "qda"),
+                        task, osw.rate = 10, maxiter = 10L, lambda = 10L,
+                        parallel = FALSE, nthreads = parallel:::detectCores()) {
+
+  ensemble = getTunedEnsemble(algorithms, osw.rate, maxiter, lambda)
+  if(parallel) {
+    parallelMap::parallelStart(mode = "socket", cpus = nthreads, level = "mlr.tuneParams")
+    model = mlr::train(ensemble, task)
+    parallelMap::parallelStop()
+  } else {
+    model = mlr::train(ensemble, task)
+  }
+  return(model)
+}
+
 
 #' Compare performance of several algorithms on the same data, with or without hyperparameter tuning
 #'
@@ -227,7 +310,7 @@ tuneAlgorithm = function(algorithm = "xgboost", task, osw.rate = 10, maxiter = 1
 #'
 #' * `seed`: Random seed used for resampling schemes.
 #'
-#' @return The result of the comparison, as an object of class [mlr::BenchmarkResults].
+#' @return The result of the comparison, as an object of class [mlr::BenchmarkResult].
 #' @export
 compareAlgorithms = function(algorithms, task, tuning = FALSE, control = list()) {
 
@@ -260,6 +343,58 @@ compareAlgorithms = function(algorithms, task, tuning = FALSE, control = list())
     compareAlgorithmsInFile(learners, task, control)
   } else if (is.list(task)){
     compareAlgorithmsAcrossFiles(learners, task, control)
+  } else {
+    stop("Either provide a classification task or a list of classificationt tasks")
+  }
+}
+
+#' Compare performance of several ensembles on the same data, with or without hyperparameter tuning
+#'
+#' @param algorithms Vector with lists of algorithms to be stacked (same algorithms as in [trainAlgorithm()]).
+#' @param task Either one classification task for comparison using cross-validation or a list of tasks for
+#'      comparisons across tasks (see Details).
+#' @param tuning Whether to tune the learners or not (default: `FALSE`).
+#' @param control Optional list of settings (see Details).
+#'
+#' @details See [compareAlgorithms()]. The argument `algorithms` should be assigned a list of vectors
+#' (or list of lists). A stacked ensemble will be created for every element of the outer list.
+#'
+#' @return The result of the comparison, as an object of class [mlr::BenchmarkResult].
+#' @export
+compareEnsemble = function(algorithms, task, tuning = FALSE, control = list()) {
+
+  # Set control values
+  defaultControl = list(folds = 5, reps = 1, parallel = FALSE,
+                        nthreads = parallel::detectCores(),
+                        maxiter = 10L, lambda = 10L,
+                        seed = 2019, osw.rate = 10)
+  for(name in names(control)) {
+    defaultControl[[name]] = control[[name]]
+  }
+  control = defaultControl
+
+  # Setting the seed ensures the resampling of the data is the same
+  set.seed(control$seed)
+
+  # For each algorithm, retrieve the learner with pre-processing steps
+  # In the case of tuning, retrieve the tuned wrapper
+  ensembles = vector("list", length(algorithms))
+  for(i in 1:length(algorithms)) {
+    if(tuning) {
+      ensembles[[i]] = getTunedEnsemble(algorithms[[i]], control$osw.rate, control$maxiter, control$lambda)
+      ensembles[[i]]$id = paste0("Ensemble_",i)
+    } else{
+      ensembles[[i]] = getEnsemble(algorithms[[i]], control$osw.rate)
+      ensembles[[i]]$id = paste0("Ensemble_",i)
+    }
+  }
+
+  # If one task, then run canonical benchmark from mlr.
+  # If multiple tasks, run special benchmark algorithms
+  if(inherits(task, "Task")) {
+    compareAlgorithmsInFile(ensembles, task, control)
+  } else if (is.list(task)){
+    compareAlgorithmsAcrossFiles(ensembles, task, control)
   } else {
     stop("Either provide a classification task or a list of classificationt tasks")
   }
@@ -375,7 +510,7 @@ innermap = function(learner, tasks, outer) {
 #' @details This will produce a new object that merges the results from the different comparisons. This is useful
 #' when different settings are used to evaluate the performance of different algorithms.
 #'
-#' @return The result of merging the comparison objects, as an object of class [mlr::BenchmarkResults].
+#' @return The result of merging the comparison objects, as an object of class [mlr::BenchmarkResult].
 #' @export
 mergeComparisons = function(comparisons) {
   mlr::mergeBenchmarkResults(as.list(comparisons))

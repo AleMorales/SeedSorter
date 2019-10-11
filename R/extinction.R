@@ -10,7 +10,7 @@ makeRLearner.classif.extinction = function() {
       ParamHelpers::makeNumericLearnerParam(id = "threshold", lower = 0, upper = 1, tunable = FALSE,
                               when = "both", default = 0)
     ),
-    properties = c("twoclass","numerics", "factors"),
+    properties = c("twoclass","numerics", "factors", "prob"),
     name = "Extinction threshold",
     short.name = "extinction",
     note = "Dataset must contain a column named Extinction"
@@ -40,7 +40,7 @@ predictLearner.classif.extinction = function(.learner, .model, .newdata, ...) {
   predictions = ifelse(.newdata$Extinction > threshold, "S", "W")
   if (.learner$predict.type == "response")
     return(as.factor(predictions))
-  else {
+  else if(.learner$predict.type == "prob") {
     probs = matrix(NA, nrow = nrow(.newdata), ncol = 2)
     colnames(probs) = c("S", "W")
     probs[,1] = ifelse(predictions == "S", 1, 0)

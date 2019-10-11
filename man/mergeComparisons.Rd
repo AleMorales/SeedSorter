@@ -10,7 +10,7 @@ mergeComparisons(comparisons)
 \item{comparisons}{List of results obtained by calling \code{compareAlgorithms}.}
 }
 \value{
-The result of merging the comparison objects, as an object of class \link[mlr:BenchmarkResults]{mlr::BenchmarkResults}.
+The result of merging the comparison objects, as an object of class \link[mlr:BenchmarkResult]{mlr::BenchmarkResult}.
 }
 \description{
 Merge results of multiple calls to \code{compareAlgorithms}

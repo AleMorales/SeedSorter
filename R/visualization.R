@@ -30,7 +30,8 @@ plotComparison = function(comparison) {
   # Calculate performances
   perf = mlr::getBMRPerformances(comparison, as.df = TRUE)  %>%
             dplyr::mutate(learner.id = as.character(learner.id),
-                          method = pretty_names[learner.id])
+                          method = pretty_names[learner.id],
+                          method = ifelse(is.na(method), learner.id, method))
 
   # Generate the plot
   plot = ggplot2::ggplot(perf, ggplot2::aes(x = forcats::fct_reorder(method, ber), y = ber*100)) +

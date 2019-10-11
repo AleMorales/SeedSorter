@@ -17,7 +17,7 @@ comparisons across tasks (see Details).}
 \item{control}{Optional list of settings (see Details).}
 }
 \value{
-The result of the comparison, as an object of class \link[mlr:BenchmarkResults]{mlr::BenchmarkResults}.
+The result of the comparison, as an object of class \link[mlr:BenchmarkResult]{mlr::BenchmarkResult}.
 }
 \description{
 Compare performance of several algorithms on the same data, with or without hyperparameter tuning
