@@ -403,8 +403,11 @@ compareEnsemble = function(algorithms, task, tuning = FALSE, control = list()) {
 # Run a benchmark from mlr
 compareAlgorithmsInFile = function(learners, task, control) {
   # Resampling scheme is CV with user-defined folds
-  resampling = mlr::makeResampleDesc("RepCV", reps = control$reps,
-                                     folds = control$folds, stratify = TRUE)
+  if(control$reps >= 2)
+    resampling = mlr::makeResampleDesc("RepCV", reps = control$reps,
+                                       folds = control$folds, stratify = TRUE)
+  else
+    resampling = mlr::makeResampleDesc("CV", iters = control$folds, stratify = TRUE)
 
   # Run benchmark, optionally running resampling folds or tuning in parallel
   if(control$parallel) {
