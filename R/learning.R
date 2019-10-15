@@ -44,6 +44,9 @@ getLearner = function(algorithm = "xgboost", osw.rate = 10, predict.type = "resp
     learner = mlr::makeLearner(cl = "classif.extinction", predict.type =  predict.type) %>%
               mlr::makeOversampleWrapper(osw.rate = osw.rate)
 
+  } else if (algorithm == "kmeans") {
+    learner = mlr::makeLearner(cl = "classif.kmeans", predict.type =  predict.type)
+
   } else {
     stop(paste0("Algorithm not supported: ", algorithm))
   }
@@ -156,6 +159,9 @@ getTunedEnsemble = function(algorithms = c("extinction", "naiveBayes", "lda", "q
 #' * `svm`: Support vector machine with radial basis kernel (aka Gaussian kernel).
 #'
 #' * `randomForest`: Multithreaded random forest as implemented in the package `randomForestSRC`.
+#'
+#' * `kmeans`: k-means clustering. This method will cluster the data into two clusters and assign
+#' the minority cluster to seed or waste depending on the parameter `seed_minority`.
 #'
 #' @return A trained model that can be used to make predictions.
 #' @export

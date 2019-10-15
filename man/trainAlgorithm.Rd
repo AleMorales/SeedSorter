@@ -28,5 +28,7 @@ The list of algorithms that can be used are:
 \item \code{logistic}: Logistic regression regularized with elasticnet grid penalty.
 \item \code{svm}: Support vector machine with radial basis kernel (aka Gaussian kernel).
 \item \code{randomForest}: Multithreaded random forest as implemented in the package \code{randomForestSRC}.
+\item \code{kmeans}: k-means clustering. This method will cluster the data into two clusters and assign
+the minority cluster to seed or waste depending on the parameter \code{seed_minority}.
 }
 }
