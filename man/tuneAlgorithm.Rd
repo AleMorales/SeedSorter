@@ -11,7 +11,7 @@ tuneAlgorithm(algorithm = "xgboost", task, osw.rate = 10,
 \arguments{
 \item{algorithm}{Name of the algorithm to be used (same algorithms as in \code{\link[=trainAlgorithm]{trainAlgorithm()}}).}
 
-\item{task}{A classification task as returned by \code{\link[=createTask]{createTask()}}.}
+\item{task}{A classification task as returned by \code{\link[=createTrainingTask]{createTrainingTask()}}.}
 
 \item{maxiter}{Maximum number of iterations in the CMA-ES optimization of hyperparameters.}
 

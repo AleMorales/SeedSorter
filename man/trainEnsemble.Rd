@@ -10,7 +10,7 @@ trainEnsemble(algorithms = c("extinction", "naiveBayes", "lda", "qda"),
 \arguments{
 \item{algorithms}{Names of the algorithm to be used as a character vector.}
 
-\item{task}{A classification task as returned by \code{\link[=createTask]{createTask()}}.}
+\item{task}{A classification task as returned by \code{\link[=createTrainingTask]{createTrainingTask()}}.}
 }
 \value{
 A trained model that can be used to make predictions.

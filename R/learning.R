@@ -140,7 +140,7 @@ getTunedEnsemble = function(algorithms = c("extinction", "naiveBayes", "lda", "q
 #' Train a learning algorithm and return the resulting model.
 #'
 #' @param algorithm Name of the algorithm to be used.
-#' @param task A classification task as returned by [createTask()].
+#' @param task A classification task as returned by [createTrainingTask()].
 #'
 #' @details The list of algorithms that can be used are:
 #'
@@ -175,7 +175,7 @@ trainAlgorithm = function(algorithm = "xgboost", task, osw.rate = 10) {
 #' Train a stacked ensemble of learning algorithms and return the resulting model.
 #'
 #' @param algorithms Names of the algorithm to be used as a character vector.
-#' @param task A classification task as returned by [createTask()].
+#' @param task A classification task as returned by [createTrainingTask()].
 #'
 #' @details The list of algorithms that can be used are the same as for [trainAlgorithm()].
 #' The stacked ensemble calculates a weight for each algorithm based on a hill climbing approach.
@@ -191,10 +191,10 @@ trainEnsemble = function(algorithms = c("extinction", "naiveBayes", "lda", "qda"
 }
 
 
-#' Use a trained model to predict to classify a sample into seeds or non-seed particles.
+#' Test a trained model with labelled data.
 #'
 #' @param model A trained model as returned by the function [trainAlgorithm()].
-#' @param task A classification task as returned by [createTask()].
+#' @param task A classification task as returned by [createTrainingTask()].
 #'
 #' @return A list with results of the prediction:
 #'
@@ -204,7 +204,7 @@ trainEnsemble = function(algorithms = c("extinction", "naiveBayes", "lda", "qda"
 #' calculated from the prediction confusion matrix.
 #'
 #' @export
-classifySeeds = function(model, task) {
+testModel = function(model, task) {
 
   data = mlr::getTaskData(task)
   prediction = predict(model, newdata = data)
@@ -213,11 +213,23 @@ classifySeeds = function(model, task) {
   return(list(prediction = prediction, error = score))
 }
 
+#' Use a trained model to predict to classify a sample into seeds or non-seed particles.
+#'
+#' @param model A trained model as returned by the function [trainAlgorithm()].
+#' @param data A dataset with all the features required by the algorithm.
+#'
+#' @return  Results of the prediction of class [mlr::Prediction].
+#'
+#' @export
+classifySeeds = function(model, data) {
+  prediction = predict(model, newdata = data)
+
+}
 
 #' Train an algorithm while tuning its hyperparameters and return the resulting model.
 #'
 #' @param algorithm Name of the algorithm to be used (same algorithms as in [trainAlgorithm()]).
-#' @param task A classification task as returned by [createTask()].
+#' @param task A classification task as returned by [createTrainingTask()].
 #' @param maxiter Maximum number of iterations in the CMA-ES optimization of hyperparameters.
 #' @param lambda Number of offspring in each iteration of the CMA-ES optimization of hyperparameters.
 #' @param parallel Whether to use parallelization in the tuning of hyperparameters (default: `FALSE`).
@@ -247,7 +259,7 @@ tuneAlgorithm = function(algorithm = "xgboost", task, osw.rate = 10, maxiter = 1
 #'
 #' @param algorithms Names of the algorithm to be used as a character vector
 #' (same algorithms as in [trainAlgorithm()]).
-#' @param task A classification task as returned by [createTask()].
+#' @param task A classification task as returned by [createTrainingTask()].
 #' @param maxiter Maximum number of iterations in the CMA-ES optimization of hyperparameters.
 #' @param lambda Number of offspring in each iteration of the CMA-ES optimization of hyperparameters.
 #' @param parallel Whether to use parallelization in the tuning of hyperparameters (default: `FALSE`).

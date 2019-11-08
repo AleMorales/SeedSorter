@@ -9,7 +9,7 @@ trainAlgorithm(algorithm = "xgboost", task, osw.rate = 10)
 \arguments{
 \item{algorithm}{Name of the algorithm to be used.}
 
-\item{task}{A classification task as returned by \code{\link[=createTask]{createTask()}}.}
+\item{task}{A classification task as returned by \code{\link[=createTrainingTask]{createTrainingTask()}}.}
 }
 \value{
 A trained model that can be used to make predictions.

@@ -4,20 +4,15 @@
 \alias{classifySeeds}
 \title{Use a trained model to predict to classify a sample into seeds or non-seed particles.}
 \usage{
-classifySeeds(model, task)
+classifySeeds(model, data)
 }
 \arguments{
 \item{model}{A trained model as returned by the function \code{\link[=trainAlgorithm]{trainAlgorithm()}}.}
 
-\item{task}{A classification task as returned by \code{\link[=createTask]{createTask()}}.}
+\item{data}{A dataset with all the features required by the algorithm.}
 }
 \value{
-A list with results of the prediction:
-\itemize{
-\item \code{prediction}: Results of the prediction of class \link[mlr:Prediction]{mlr::Prediction}.
-\item \code{error}: Values of the balanced error rate (\code{ber}) and the mean mis-classification error (\code{mmce})
-calculated from the prediction confusion matrix.
-}
+Results of the prediction of class \link[mlr:Prediction]{mlr::Prediction}.
 }
 \description{
 Use a trained model to predict to classify a sample into seeds or non-seed particles.
