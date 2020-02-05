@@ -91,15 +91,33 @@ processFiles = function(dir = getwd()) {
 #'
 #' @export
 readData = function(mainfile, profile) {
+
+  # Read the files with features extracted from the profile
   profile_data = fst::read_fst(profile) %>%
                     tibble::as_tibble(.)
-  main_data = suppressWarnings(readr::read_delim(mainfile, delim = "\t")) %>%
+
+  # Types of columns for the raw main file from the BioSorter
+  types_of_cols = readr::cols(
+    .default = readr::col_double(),
+    Plate = readr::col_character(),
+    `Source well` = readr::col_character(),
+    Clog = readr::col_character(),
+    `In Regions` = readr::col_character(),
+    `PC Extinction` = readr::col_character(),
+    `PC Green` = readr::col_character(),
+    `PC Yellow` = readr::col_character(),
+    `PC Red` = readr::col_character())
+
+  # Read the raw main file from the BioSorter
+  main_data = readr::read_delim(mainfile, delim = "\t", col_types = types_of_cols, n_max = nrow(profile_data)) %>%
                     tibble::as_tibble(.) %>%
                     dplyr::filter(!is.na(Id), !is.na(Time)) %>%
                     dplyr::select(-X27)
   all_data = dplyr::bind_cols(main_data[1:nrow(profile_data),], profile_data)
   dplyr::select(all_data, TOF, Extinction, Green, Yellow, Red, P, Px, C)
 }
+
+
 
 #' Read and process seed sample (with optional complementary waste sample)
 #'
