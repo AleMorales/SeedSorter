@@ -4,8 +4,12 @@
 \alias{getPredictionData}
 \title{Read and process seed sample to be classified}
 \usage{
-getPredictionData(main_file, profile_file, datadir = "",
-  calibration = c(38.325, 0.185))
+getPredictionData(
+  main_file,
+  profile_file,
+  datadir = "",
+  calibration = c(38.325, 0.185)
+)
 }
 \arguments{
 \item{main_file}{Name of the file with measurements of extinction and time of flight.}

@@ -4,9 +4,16 @@
 \alias{getTrainingData}
 \title{Read and process seed sample (with optional complementary waste sample)}
 \usage{
-getTrainingData(main_file, profile_file, datadir = "",
-  main_waste_file = NULL, profile_waste_file = NULL,
-  calibration = c(38.325, 0.185), clean = FALSE, cleanguess = 200)
+getTrainingData(
+  main_file,
+  profile_file,
+  datadir = "",
+  main_waste_file = NULL,
+  profile_waste_file = NULL,
+  calibration = c(38.325, 0.185),
+  clean = FALSE,
+  cleanguess = 200
+)
 }
 \arguments{
 \item{main_file}{Name of the file with measurements of extinction and time of flight.}

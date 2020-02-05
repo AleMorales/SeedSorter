@@ -10,9 +10,13 @@ Description: Uses data from large particle flow cytometers and
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 6.1.1
+RoxygenNote: 7.0.2
 Imports: dplyr, tibble, forcats, ggplot2, parallelMap, xgboost, 
          randomForestSRC, kernlab, glmnet, FNN, MASS, future, purrr, furrr, fst,
          readr, magrittr, ParamHelpers, caret, cmaes, e1071
 Depends: mlr
 Roxygen: list(markdown = TRUE)
+Suggests: 
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr

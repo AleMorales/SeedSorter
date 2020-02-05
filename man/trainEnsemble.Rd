@@ -4,8 +4,11 @@
 \alias{trainEnsemble}
 \title{Train a stacked ensemble of learning algorithms and return the resulting model.}
 \usage{
-trainEnsemble(algorithms = c("extinction", "naiveBayes", "lda", "qda"),
-  task, osw.rate = 10)
+trainEnsemble(
+  algorithms = c("extinction", "naiveBayes", "lda", "qda"),
+  task,
+  osw.rate = 10
+)
 }
 \arguments{
 \item{algorithms}{Names of the algorithm to be used as a character vector.}

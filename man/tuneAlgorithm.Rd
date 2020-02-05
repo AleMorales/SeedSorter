@@ -4,9 +4,15 @@
 \alias{tuneAlgorithm}
 \title{Train an algorithm while tuning its hyperparameters and return the resulting model.}
 \usage{
-tuneAlgorithm(algorithm = "xgboost", task, osw.rate = 10,
-  maxiter = 10L, lambda = 10L, parallel = FALSE,
-  nthreads = parallel:::detectCores())
+tuneAlgorithm(
+  algorithm = "xgboost",
+  task,
+  osw.rate = 10,
+  maxiter = 10L,
+  lambda = 10L,
+  parallel = FALSE,
+  nthreads = parallel:::detectCores()
+)
 }
 \arguments{
 \item{algorithm}{Name of the algorithm to be used (same algorithms as in \code{\link[=trainAlgorithm]{trainAlgorithm()}}).}

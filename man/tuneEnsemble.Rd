@@ -4,9 +4,15 @@
 \alias{tuneEnsemble}
 \title{Train a stacked ensemble of algorithms while tuning its hyperparameters and return the resulting model.}
 \usage{
-tuneEnsemble(algorithms = c("extinction", "naiveBayes", "lda", "qda"),
-  task, osw.rate = 10, maxiter = 10L, lambda = 10L,
-  parallel = FALSE, nthreads = parallel:::detectCores())
+tuneEnsemble(
+  algorithms = c("extinction", "naiveBayes", "lda", "qda"),
+  task,
+  osw.rate = 10,
+  maxiter = 10L,
+  lambda = 10L,
+  parallel = FALSE,
+  nthreads = parallel:::detectCores()
+)
 }
 \arguments{
 \item{algorithms}{Names of the algorithm to be used as a character vector
