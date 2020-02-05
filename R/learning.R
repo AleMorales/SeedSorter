@@ -208,8 +208,8 @@ testModel = function(model, task) {
 
   data = mlr::getTaskData(task)
   prediction = predict(model, newdata = data)
-  score = c(ber = mlr::performance(prediction, measures = mlr::ber),
-            mmce = mlr::performance(prediction, measures = mlr::mmce))
+  score = c(mlr::performance(prediction, measures = mlr::ber),
+            mlr::performance(prediction, measures = mlr::mmce))
   return(list(prediction = prediction, error = score))
 }
 
