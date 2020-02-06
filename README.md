@@ -13,7 +13,9 @@ the following code into an R session:
 devtools::install_github(repo = "AleMorales/SeedSorter")
 ```
 
-## Documentation
+## Tutorials and examples
+
+An introductory tutorial to the use of SeedSorter is available [here](https://alemorales.github.io/SeedSorter/).
 
 For a real life example of the use of SeedSorter see https://github.com/AleMorales/SeedSorterPaper, which contains the raw data and
 R scripts behind the paper "A high throughput method for quantifying number and size distribution of *Arabidopsis* seeds using large particle flow cytometry" by Morales
